@@ -45,13 +45,6 @@ fun MainScreen(navController: NavHostController) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate("favorite_screen") }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_favorite_24),
-                            contentDescription = "Favorite Cities",
-                            tint = Color(0xFFE91E63)
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF9FD7E1))
             )

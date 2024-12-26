@@ -13,29 +13,51 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.weather_app.R
 import com.example.weather_app.cities.CityCoordinates.getCoordinates
+import com.example.weather_app.room.WeatherEntity
+import com.example.weather_app.room.WeatherDatabase
+import com.example.weather_app.room.WeatherDao
 import getWeather
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(city: String, navController: NavHostController) {
+fun DetailScreen(city: String, navController: NavHostController, weatherDatabase: WeatherDatabase) {
     val weatherInfo = remember { mutableStateOf("Loading...") }
     val temperature = remember { mutableStateOf("Temperature: --°C") }
     val condition = remember { mutableStateOf("Condition: Unknown") }
     val imageResource = remember { mutableStateOf(R.drawable.city) }
     val coroutineScope = rememberCoroutineScope()
+    val weatherDao: WeatherDao = weatherDatabase.weatherDao()
 
     LaunchedEffect(city) {
         coroutineScope.launch {
-            val cityCoordinates = getCoordinates(city)
-            val result = cityCoordinates?.let { getWeather(it.first, cityCoordinates.second, "11c608c5-f657-4aff-bf88-e950970cbfba") }
-            weatherInfo.value = if (result != null) {
-                temperature.value = "Temperature: ${result.fact.temp}°C"
-                condition.value = "Condition: ${result.fact.condition}"
-                imageResource.value = getWeatherImage(result.fact.temp)
-                "Data loaded"
+            val weatherData = weatherDao.getWeatherByCity(city)
+
+            if (weatherData != null) {
+                weatherInfo.value = "Data loaded from database"
+                temperature.value = "Temperature: ${weatherData.temperature}°C"
+                condition.value = "Condition: ${weatherData.condition}"
+                imageResource.value = weatherData.imageResource
             } else {
-                "Failed to load data"
+                val cityCoordinates = getCoordinates(city)
+                val result = cityCoordinates?.let { getWeather(it.first, it.second, "11c608c5-f657-4aff-bf88-e950970cbfba") }
+                if (result != null) {
+                    weatherInfo.value = "Data loaded"
+                    temperature.value = "Temperature: ${result.fact.temp}°C"
+                    condition.value = "Condition: ${result.fact.condition}"
+                    imageResource.value = getWeatherImage(result.fact.temp)
+
+                    weatherDao.insertWeather(
+                        WeatherEntity(
+                            city = city,
+                            temperature = result.fact.temp,
+                            condition = result.fact.condition,
+                            imageResource = imageResource.value
+                        )
+                    )
+                } else {
+                    weatherInfo.value = "Failed to load data"
+                }
             }
         }
     }
@@ -59,13 +81,6 @@ fun DetailScreen(city: String, navController: NavHostController) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { navController.navigate("favorite_screen") }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_favorite_24),
-                            contentDescription = "Favorite Cities",
-                            tint = Color(0xFFE91E63)
-                        )
-                    }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF9FD7E1))
             )
