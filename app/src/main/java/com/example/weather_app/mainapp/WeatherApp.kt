@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.weather_app.models.FavoriteViewModel
+import com.example.weather_app.screens.AddCityScreen
 import com.example.weather_app.screens.DetailScreen
 import com.example.weather_app.screens.FavoriteScreen
 import com.example.weather_app.screens.MainScreen
 
 @Composable
-fun WeatherApp() {
+fun WeatherApp(viewModel: FavoriteViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "main_screen") {
         composable("main_screen") {
@@ -20,7 +22,10 @@ fun WeatherApp() {
             DetailScreen(city)
         }
         composable("favorite_screen") {
-            FavoriteScreen(navController)
+            FavoriteScreen(navController, viewModel)
+        }
+        composable("add_city") {
+            AddCityScreen(navController, viewModel)
         }
     }
 }

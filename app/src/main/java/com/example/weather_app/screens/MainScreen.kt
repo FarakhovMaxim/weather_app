@@ -23,10 +23,8 @@ import com.example.weather_app.cities.CityCoordinates
 fun MainScreen(navController: NavHostController) {
     val cities = listOf("Moscow", "Saint Petersburg", "London", "Paris")
     val cityImages = listOf(R.drawable.moscow, R.drawable.saintpetersburg, R.drawable.london, R.drawable.paris)
-
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
-    var foundCity by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var cityName by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -39,11 +37,11 @@ fun MainScreen(navController: NavHostController) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_favorite_24),
                             contentDescription = "Любимые города",
-                            tint = Color.Red
+                            tint = Color(0xFFE91E63)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF6200EE))
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF9FD7E1))
             )
         }
     ) { paddingValues ->
@@ -68,40 +66,41 @@ fun MainScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Введите координаты вашего города:",
+                text = "Введите название вашего города:",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
-                value = latitude,
-                onValueChange = { latitude = it },
-                label = { Text("Широта") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = longitude,
-                onValueChange = { longitude = it },
-                label = { Text("Долгота") },
+                value = cityName,
+                onValueChange = { cityName = it },
+                label = { Text("Город") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
                 onClick = {
-                    val lat = latitude.toDoubleOrNull()
-                    val lon = longitude.toDoubleOrNull()
-                    if (lat != null && lon != null) {
-                        foundCity = findCityByCoordinates(lat, lon)
-                        if (foundCity != null) {
-                            navController.navigate("detail_screen/$foundCity")
-                        }
+                    val coordinates = findCoordinatesByCity(cityName)
+                    if (coordinates != null) {
+                        val (lat, lon) = coordinates
+                        navController.navigate("detail_screen/$cityName?lat=$lat&lon=$lon")
+                        errorMessage = null
                     } else {
-                        foundCity = "Неверные координаты"
+                        errorMessage = "Город не найден"
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9FD7E1))
             ) {
-                Text("Найти город")
+                Text("Найти координаты")
+            }
+
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Red
+                )
             }
         }
     }
@@ -115,7 +114,7 @@ fun CityCard(city: String, imageId: Int, navController: NavHostController) {
             .clickable { navController.navigate("detail_screen/$city") },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF6200EE))
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF9FD7E1))
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -141,11 +140,6 @@ fun CityCard(city: String, imageId: Int, navController: NavHostController) {
     }
 }
 
-fun findCityByCoordinates(lat: Double, lon: Double): String? {
-    for ((city, coordinates) in CityCoordinates.cityMap) {
-        if (coordinates.first == lat && coordinates.second == lon) {
-            return city
-        }
-    }
-    return null
+fun findCoordinatesByCity(city: String): Pair<Double, Double>? {
+    return CityCoordinates.cityMap[city]
 }
