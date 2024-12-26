@@ -21,8 +21,8 @@ import com.example.weather_app.cities.CityCoordinates
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
-    val cities = listOf("Moscow", "Saint Petersburg", "London", "Paris")
-    val cityImages = listOf(R.drawable.moscow, R.drawable.saintpetersburg, R.drawable.london, R.drawable.paris)
+    val cities = listOf("Moscow", "Saint Petersburg", "London", "Paris", "Tokyo")
+    val cityImages = listOf(R.drawable.moscow, R.drawable.saintpetersburg, R.drawable.london, R.drawable.paris, R.drawable.tokyo)
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var cityName by remember { mutableStateOf("") }
 
@@ -30,13 +30,25 @@ fun MainScreen(navController: NavHostController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Weather App")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { navController.navigate("main_screen") }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_home_24),
+                                contentDescription = "Go Home",
+                                tint = Color(0xFFFFFFFF)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Weather App", color = Color.White)
+                    }
                 },
                 actions = {
                     IconButton(onClick = { navController.navigate("favorite_screen") }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_favorite_24),
-                            contentDescription = "Любимые города",
+                            contentDescription = "Favorite Cities",
                             tint = Color(0xFFE91E63)
                         )
                     }
@@ -44,6 +56,7 @@ fun MainScreen(navController: NavHostController) {
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF9FD7E1))
             )
         }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -51,7 +64,7 @@ fun MainScreen(navController: NavHostController) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Наиболее популярные города:",
+                text = "Most Popular Cities:",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -66,14 +79,14 @@ fun MainScreen(navController: NavHostController) {
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Введите название вашего города:",
+                text = "Enter your city name:",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
                 value = cityName,
                 onValueChange = { cityName = it },
-                label = { Text("Город") },
+                label = { Text("City") },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -85,13 +98,13 @@ fun MainScreen(navController: NavHostController) {
                         navController.navigate("detail_screen/$cityName?lat=$lat&lon=$lon")
                         errorMessage = null
                     } else {
-                        errorMessage = "Город не найден"
+                        errorMessage = "City not found"
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9FD7E1))
             ) {
-                Text("Найти координаты")
+                Text("Find City")
             }
 
             errorMessage?.let {

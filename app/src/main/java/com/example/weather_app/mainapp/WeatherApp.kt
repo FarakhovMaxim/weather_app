@@ -19,7 +19,7 @@ fun WeatherApp(viewModel: FavoriteViewModel) {
         }
         composable("detail_screen/{city}") { backStackEntry ->
             val city = backStackEntry.arguments?.getString("city") ?: "Unknown City"
-            DetailScreen(city)
+            DetailScreen(city, navController)
         }
         composable("favorite_screen") {
             FavoriteScreen(navController, viewModel)

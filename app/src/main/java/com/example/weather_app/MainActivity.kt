@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
                     this,
                     FavoriteViewModelFactory(cityDao)
                 )[FavoriteViewModel::class.java]
-                WeatherApp(favoriteViewModel)
+                WeatherApp(viewModel = favoriteViewModel)
             }
         }
     }
